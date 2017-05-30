@@ -1,2 +1,2 @@
 # WaspFacer
-MATLAB Toolset for assessment of fluctuating asymmetry in wasps
+MATLAB Toolset for assessing fluctuating asymmetry in wasps
