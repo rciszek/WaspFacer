@@ -1,4 +1,4 @@
-function preprocessed_image = preprocess_image( im )
+function preprocessed_image = preprocess_image( original_image )
 %preprocess_image - Preprocesses an image in order to speed up shape
 %detection.
 %Preprocesses the image given as an input by clustering the points into

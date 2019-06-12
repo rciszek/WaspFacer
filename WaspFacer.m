@@ -8,7 +8,7 @@ function WaspFacer()
 % Other m-files required: GUI Layout Toolbox by David Sampson
 %
 % Author: Robert Ciszek 
-% July 2015; Last revision: 30-May-2017
+% July 2015; Last revision: 26-April-2019
     image_map = containers.Map('UniformValues',false);
     preprocessed_map = containers.Map('UniformValues',false);
     result_metadata_map = containers.Map('UniformValues',false);
@@ -48,7 +48,7 @@ function WaspFacer()
     %Define main GUI figure
     main_gui_figure = figure('Visible','off', 'Resize', 'on', 'DockControls', 'off', 'Units', 'Normalized','Position', [ 0 0 0.5 0.5]);
 
-    set(main_gui_figure, 'Name', 'WaspFacer 0.92');
+    set(main_gui_figure, 'Name', 'WaspFacer 0.96');
     set(main_gui_figure, 'NumberTitle', 'Off');
     set(main_gui_figure, 'Toolbar', 'none');
     set(main_gui_figure, 'Menubar', 'none');
@@ -65,11 +65,12 @@ function WaspFacer()
     %Define GUI components
     file_menu = uimenu(main_gui_figure,'Label', 'Files');
         menu_item_images = uimenu(file_menu,'Label', 'Select images');
-        menu_save_results = uimenu(file_menu,'Label', 'Save results', 'Visible', 'off');
-        menu_export_submenu = uimenu(file_menu,'Label', 'Export', 'Visible', 'off');
-        menu_export_coordinates = uimenu(menu_export_submenu,'Label', 'Coordinates', 'Visible', 'on');
-        menu_export_patterns = uimenu(menu_export_submenu,'Label', 'Patterns', 'Visible', 'on');
-
+        menu_save_results = uimenu(file_menu,'Label', 'Save results', 'Visible', 'off');       
+        menu_export_submenu = uimenu(file_menu,'Label', 'Export', 'Visible', 'off');        
+            menu_export_coordinates = uimenu(menu_export_submenu,'Label', 'Coordinates', 'Visible', 'on');
+            menu_export_patterns = uimenu(menu_export_submenu,'Label', 'Patterns', 'Visible', 'on');
+        menu_import_measurements = uimenu(file_menu,'Label', 'Import', 'Visible', 'off'); 
+        
     settings_menu = uimenu(main_gui_figure,'Label', 'Settings');
     menu_item_preferences = uimenu(settings_menu,'Label', 'Preferences');
 
@@ -165,6 +166,8 @@ function WaspFacer()
     set(menu_export_coordinates, 'Callback', @export_coordinates_callback);
     set(menu_export_patterns, 'Callback', @export_patterns_callback);
     set(menu_item_preferences, 'Callback', @settings_callback);
+    set(menu_import_measurements, 'Callback', @import_callback);
+    
     %For image list
     set(list_images, 'Callback', @list_images_callback);   
     %For zoom buttons
@@ -798,7 +801,6 @@ function WaspFacer()
             left_side(i,1) = horizontal_black_pixel_count( hyp_x-1, hyp_y, -1, cropped_image );
             right_side(i,1) = horizontal_black_pixel_count( hyp_x, hyp_y, 1, cropped_image );
                      
-            
         end 
 
         [left_side, right_side] = truncate_pixel_data(left_side, right_side);
@@ -1038,10 +1040,10 @@ function WaspFacer()
     end
 
 
-    function horizontal_black_pixel_count = horizontal_black_pixel_count(start_x, start_y, direction, image )
+    function pixel_count = horizontal_black_pixel_count(start_x, start_y, direction, image )
         
         offset = 1;
-        horizontal_black_pixel_count = 0;
+        pixel_count = 0;
         while true
             if start_x < 1 || start_x > image_size(2) || start_y < 1 || start_y > image_size(1)
                 break;
@@ -1049,10 +1051,12 @@ function WaspFacer()
             if start_x+direction*offset < 1 || start_x+direction*offset > image_size(2)
                 break;
             end                 
-            if image(start_y,start_x+direction*offset) ~= 1
-                horizontal_black_pixel_count = horizontal_black_pixel_count +1;  
+            if image(start_y,start_x+direction*offset) ~= 0 
+                pixel_count = pixel_count +1;  
             end  
+
             offset = offset +1;
+          
         end
          
     end
@@ -1272,5 +1276,45 @@ function WaspFacer()
         end
         isp_api.setMagnification(desired_mag);  
     end
+
+    function import_callback(hObject, eventdata)
+        
+        [filenames pathname ] = uigetfile({'*.meta';},'Select meta file','MultiSelect', 'off');
+           
+        image_name_list = cell(1,0);
+        %If a file was actually selected...        
+        if size(filenames,2) > 1  
+            
+            %Clear all previously stored data
+            
+            %Show loading text
+            %If a single file was selected
+            if isa(filenames, 'char')    
+                complete_filename = strcat(pathname, filenames);
+                meta_data = importdata(complete_filename);
+            %If multiple files were selected     
+            end
+
+            %hide_loading_panel();
+            set(list_images,'Visible', 'on')   
+            set(list_images, 'String', image_name_list);
+            set(list_images, 'Value', 1);
+            
+            set(button_symmetryline,'Enable', 'on');
+            set(button_rotationline,'Enable', 'on') ;           
+            set(button_area,'Enable', 'on');          
+            set(button_zoom_in,'Enable', 'on');
+            set(button_zoom_out,'Enable', 'on')                ;
+        end   
+    end
+
+
+    function import_measurements(measurement_map)
+        
+        image_names = keys(measurement_map);
+        
+        add_result( symmetry_distance, proc_dist, area_dif, area_total );        
+    end
+
 end
 
