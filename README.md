@@ -15,4 +15,4 @@ The measurements can be exported as .csv files for further analysis. The coordin
 All exported results include a metadata file that contains image coordinates of the symmetry axis, marking and automatically placed landmarks, and the settings (e.g. threshold) used to produce the exported results. The metadata is stored as .mat file.
 
 ## Download
-[WaspFacer 1.07 installer](https://studentuef-my.sharepoint.com/:u:/g/personal/ciszek_uef_fi/EbaO-mbP5LFEv2ycxx8bctYBo0Z2ygoN0JV4XEUt2-n0kg?e=TcVMbj) for Windows.
+[WaspFacer 1.07 installer](https://studentuef-my.sharepoint.com/:u:/g/personal/ciszek_uef_fi/ERZg7Y_In5ZGoecOES51wzwBa2pxvLc2iqAdZsxQpVH7lw?e=fCE0VQ) for Windows.
