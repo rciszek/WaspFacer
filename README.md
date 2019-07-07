@@ -1,6 +1,6 @@
 # WaspFacer
 
-WaspFacer is a toolbox for measuring facial markings in wasps. User simply draws a rough estimate of marking's location on an image and WaspFacer will segment the marking from the indicated area. 
+MATLAB Toolset for assessing facial markings in wasps (Vespula sp.). User simply draws a rough estimate of marking's location on an image and WaspFacer will segment the marking from the indicated area. 
 
 WaspFacer calculates for each segmented marking:
 - Continuous Asymmetry Measure
