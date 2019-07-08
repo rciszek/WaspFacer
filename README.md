@@ -2,8 +2,7 @@
 
 MATLAB Toolset for assessing facial markings in wasps (Vespula sp.). User simply draws a rough estimate of marking's location on an image and WaspFacer will segment the marking from the indicated area. 
 
-
-![alt text](img/gui.jpg "WaspFacer GUI")
+![GUI](https://raw.githubusercontent.com/rciszek/WaspFacer/gh-pages/img/gui.jpg)
 
 WaspFacer calculates for each segmented marking:
 - Continuous Asymmetry Measure
