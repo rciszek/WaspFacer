@@ -1,6 +1,6 @@
 # WaspFacer
 
-Waspfacer is a MATLAB Toolset for assessing facial markings in wasps (Vespula sp.). User simply draws a rough estimate of marking's location on an image and WaspFacer will segment the marking from the indicated area. 
+WaspFacer is a MATLAB Toolset for assessing facial markings in wasps (Vespula sp.). User simply draws a rough estimate of marking's location on an image and WaspFacer will segment the marking from the indicated area. 
 
 ![GUI](https://raw.githubusercontent.com/rciszek/WaspFacer/gh-pages/img/gui.jpg)
 
