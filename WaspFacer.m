@@ -9,6 +9,9 @@ function WaspFacer()
 %
 % Author: Robert Ciszek 
 % July 2015; Last revision: 30-May-2017
+
+    addpath(genpath(pwd))
+
     image_map = containers.Map('UniformValues',false);
     preprocessed_map = containers.Map('UniformValues',false);
     result_metadata_map = containers.Map('UniformValues',false);
