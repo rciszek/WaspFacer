@@ -18,7 +18,7 @@ All exported results include a metadata file that contains image coordinates of 
 
 ## Installation
 ### Automatic (Windows)
-Download and execute [WaspFacer 1.07 installer](https://github.com/rciszek/WaspFacer/releases/download/v0.96/WaspFacerInstaller.exe).
+Download and execute [WaspFacer 0.97 installer](https://github.com/rciszek/WaspFacer/releases/download/v0.97/WaspFacerInstaller.exe).
 
 ### Manual (Windows, Linux, Mac)
 - Download [source](https://github.com/rciszek/WaspFacer/releases) from the releases page, and extract the source to a folder of choice.  
