@@ -8,7 +8,7 @@ function WaspFacer()
 % Other m-files required: GUI Layout Toolbox by David Sampson
 %
 % Author: Robert Ciszek 
-% July 2015; Last revision: 26-April-2019
+% July 2015; Last revision: 10-July-2019
 
     addpath(genpath(pwd))
 
@@ -17,6 +17,7 @@ function WaspFacer()
     result_metadata_map = containers.Map('UniformValues',false);
     symmetry_line = [];
     rotation_line = [];
+    distance_line = [];
     area = [];
     original_image = [];
     preprocessed_image = [];
@@ -45,13 +46,13 @@ function WaspFacer()
     crop_lower = 0;
     show_symmetry = 0;
 
-    result_header = {'Image', 'Symm. Dist.', 'Proc. Dist.', 'Area Dif.', 'Area Total'};
+    result_header = {'Image', 'Symm. Dist.', 'Proc. Dist.', 'Area Dif.', 'Area Total', 'Meas. dist'};
     landmark_data = containers.Map('UniformValues',false);
 
     %Define main GUI figure
     main_gui_figure = figure('Visible','off', 'Resize', 'on', 'DockControls', 'off', 'Units', 'Normalized','Position', [ 0 0 0.5 0.5]);
 
-    set(main_gui_figure, 'Name', 'WaspFacer 0.96');
+    set(main_gui_figure, 'Name', 'WaspFacer 0.97');
     set(main_gui_figure, 'NumberTitle', 'Off');
     set(main_gui_figure, 'Toolbar', 'none');
     set(main_gui_figure, 'Menubar', 'none');
@@ -63,7 +64,7 @@ function WaspFacer()
     center_box = uix.Grid( 'Parent', horizontal_box, 'Spacing', 5, 'Padding', 15 ); 
     
     right_box = uix.Grid( 'Parent', horizontal_box, 'Spacing', 5, 'Padding', 15 );
-    set( horizontal_box, 'Widths', [250 -8 250 ], 'Heights', [-1] ); 
+    set( horizontal_box, 'Widths', [250 -8 250 ], 'Heights', -1 ); 
     
     %Define GUI components
     file_menu = uimenu(main_gui_figure,'Label', 'Files');
@@ -81,7 +82,7 @@ function WaspFacer()
         list_images = uicontrol(panel_image_list, 'Style', 'List', 'String', [],'Units', 'Normalized', 'Position', [0.03, 0.01, 0.94, 0.98], 'Visible', 'off');
 
     panel_result = uipanel(left_box, 'Title', 'Results', 'Position', [ .094, .14, .156, .39] );
-        table_result = uitable(panel_result,'Data',cell(0,5), 'Units', 'normalized', 'Position', [ 0.01 0.02 0.97 0.97], 'ColumnName', result_header, 'ColumnWidth', { 75, 60, 60, 60, 70}, 'Visible', 'off', 'Enable', 'Inactive'); 
+        table_result = uitable(panel_result,'Data',cell(0,6), 'Units', 'normalized', 'Position', [ 0.01 0.02 0.97 0.97], 'ColumnName', result_header, 'ColumnWidth', { 75, 60, 60, 60, 60, 70}, 'Visible', 'off', 'Enable', 'Inactive'); 
 
     zoom_button_box = uix.HBox( 'Parent', center_box, 'Spacing', 10, 'Padding', 5 );   
         uix.Empty( 'Parent', zoom_button_box );
@@ -96,7 +97,7 @@ function WaspFacer()
         isp = imscrollpanel( panel_image, is);
         isp_api = iptgetapi(isp);
         
-       set( center_box, 'Widths', [-1 ], 'Heights', [36 -1] );     
+       set( center_box, 'Widths', -1 , 'Heights', [36 -1] );     
         
     panel_loading = uipanel(main_gui_figure, 'Title', [] , 'Position', [ .3, .4, 0.3, .2], 'BorderType', 'line', 'Visible', 'off', 'HighlightColor', 'black' );     
         loading_label = uicontrol('Parent',panel_loading, 'Style', 'text', 'String','Loading...', 'Units', 'normalized', 'Position',[ .1 0.5, 0.2 0.1] , 'FontSize', 30 ,'Visible', 'off');    
@@ -106,7 +107,8 @@ function WaspFacer()
             button_symmetryline = uicontrol( panel_symmetryline, 'Style', 'pushbutton', 'String', 'Place', 'Enable', 'off');
         panel_rotationline = uiextras.Panel('Parent',symmetry_rotation_box, 'Title', 'Rotation line','Padding', 5 );
             button_rotationline = uicontrol( panel_rotationline, 'Style', 'pushbutton', 'String', 'Place', 'Enable', 'off'); 
-        set( symmetry_rotation_box, 'Sizes', [100 100] );
+          
+         set( symmetry_rotation_box, 'Sizes', [100 100] );
 
     area_rotate_box = uiextras.HBox( 'Parent', right_box, 'Spacing', 10, 'Padding', 5 );                 
         panel_area = uiextras.Panel('Parent',area_rotate_box, 'Title', 'Area','Padding', 5 );
@@ -124,12 +126,18 @@ function WaspFacer()
             button_display_outlines = uicontrol( panel_display_outlines, 'Style', 'pushbutton', 'String', 'Off', 'Units', 'Normalized','Position', [ 0.15, 0.17, 0.7 , 0.73], 'Visible', 'on', 'Enable', 'off');           
     set( original_outlines_box, 'Sizes', [100 100] );
     
+    distance_line_box = uiextras.HBox( 'Parent', right_box, 'Spacing', 10, 'Padding', 5 );     
+        panel_distanceline = uiextras.Panel('Parent',distance_line_box, 'Title', 'Distance line','Padding', 5 );
+            button_distanceline = uicontrol( panel_distanceline, 'Style', 'pushbutton', 'String', 'Place', 'Enable', 'off');    
+        uiextras.Empty( 'Parent', distance_line_box );
+            
+      set( distance_line_box, 'Sizes', [100 100] );  
     panel_threshold = uiextras.Panel('Parent',right_box, 'Title', 'Threshold' );
         threshold_box = uiextras.HBox( 'Parent', panel_threshold, 'Spacing', 10, 'Padding', 5 );     
             slider_threshold = uicontrol( threshold_box, 'Style', 'slider', 'Min', 1, 'Max', 99,  'value', threshold*100, 'SliderStep', [1/100 1/100], 'Enable', 'off');     
             label_threshold = uix.Text( 'Parent', threshold_box, 'String', get(slider_threshold, 'Value') / 100, 'Visible', 'on', 'VerticalAlignment', 'middle' );  
             set( threshold_box, 'Sizes', [-10 -2] );
-            
+    
     panel_fill = uiextras.Panel('Parent',right_box, 'Title', 'Fill');
         fill_box = uiextras.HBox( 'Parent', panel_fill, 'Spacing', 10, 'Padding', 5 );      
             slider_fill = uicontrol( 'Parent',fill_box, 'Style', 'slider', 'Min', 1, 'Max', 1000,  'value', fill, 'SliderStep', [1/1000 1/1000], 'Enable', 'off');     
@@ -159,8 +167,13 @@ function WaspFacer()
         panel_symmetry_area_total = uiextras.Panel('Parent',difference_total_box, 'Title', 'Total area' );
             label_symmetry_area_total =  uix.Text( 'Parent',panel_symmetry_area_total,  'String', [],'VerticalAlignment', 'middle');      
 
-    set( left_box, 'Widths', [-1 ], 'Heights', [-1 -1] );         
-    set( right_box, 'Widths',[220], 'Heights',  [60 60 60 45 45 60 50 50] );         
+    distance_box = uiextras.HBox( 'Parent', right_box, 'Spacing', 10, 'Padding', 5 );             
+        panel_distance = uiextras.Panel( 'Parent',distance_box, 'Title', 'Meas. dist.');
+            label_distance =  uix.Text('Parent',panel_distance',  'String', [],'VerticalAlignment', 'middle');           
+        uiextras.Empty( 'Parent', distance_box );
+                   
+    set( left_box, 'Widths', -1 , 'Heights', [-1 -1] );         
+    set( right_box, 'Widths',220, 'Heights',  [60 60 60 60 45 45 60 50 50, 50] );         
     %Set callbacks  
     
     %For menu
@@ -182,6 +195,7 @@ function WaspFacer()
     set(button_rotationline, 'Callback', @rotationline_callback);
     set(button_area, 'Callback', @area_callback);
     set(button_rotate, 'Callback', @rotate_callback);
+    set(button_distanceline, 'Callback', @distanceline_callback);    
     set(button_display_original, 'Callback', @display_original_callback);
     set(button_display_outlines, 'Callback', @display_outlines_callback);
     set(button_calculate_symmetry, 'Callback', @calculate_symmetry_callback);
@@ -198,8 +212,8 @@ function WaspFacer()
     set(get(handle(main_gui_figure),'JavaFrame'),'Maximized',1);
        
 
-    function select_files_callback( hObject, eventdata )
-        [filenames pathname ] = uigetfile({'*.jpg';'*.png';'*.bmb'},'Select images','MultiSelect', 'on');
+    function select_files_callback( ~, eventdata )
+        [filenames, pathname ] = uigetfile({'*.jpg';'*.png';'*.bmb'},'Select images','MultiSelect', 'on');
            
         image_name_list = cell(1,0);
         %If a file was actually selected...        
@@ -240,7 +254,8 @@ function WaspFacer()
             set(list_images, 'Value', 1);
             
             set(button_symmetryline,'Enable', 'on');
-            set(button_rotationline,'Enable', 'on') ;           
+            set(button_rotationline,'Enable', 'on') ; 
+            set(button_distanceline,'Enable', 'on') ;            
             set(button_area,'Enable', 'on');          
             set(button_zoom_in,'Enable', 'on');
             set(button_zoom_out,'Enable', 'on')                
@@ -252,32 +267,76 @@ function WaspFacer()
 
     end
 
-    function save_results_callback( hObject, eventdata )
+    function distanceline_callback( ~, ~ )
+        
+        function update_label(~)
+            hlabel = getLabelHandle(distance_line);
+            set(hlabel,'String',num2str( round(getDistance(distance_line)/get_pixels_per_mm()*100)/100));  
+        end
+         
+        if strcmp( get(button_distanceline, 'String'), 'Place'  )
+            
+            if ~isempty(distance_line)
+                delete(distance_line )
+            end
+
+            try
+                distance_line = imdistline(image_axes);
+                addNewPositionCallback(distance_line,@update_label);
+                update_label([]);
+            catch
+                return; 
+            end        
+            
+            setColor(distance_line, 'cyan'); 
+            set(findobj(distance_line, 'Type', 'line'), 'UIContextMenu',[]);
+
+            set(button_distanceline, 'String', 'Remove')
+            setColor(distance_line, 'cyan');    
+
+            
+        else
+            set(button_distanceline, 'String', 'Place');
+            delete(distance_line );            
+        end
+              
+    end
+
+    function measured_distance = measure_distance() 
+        measured_distance = 'NaN';
+        if ~isempty(distance_line)
+         get_pixels_per_mm()
+           measured_distance = getDistance(distance_line) /get_pixels_per_mm(); 
+        end
+             
+    end
+
+    function save_results_callback( ~, ~ )
        
         [file_name,path_name, filter] = uiputfile( {'*.xlsx', 'Excel Worksheet (*.xlsx)'; '*.csv', 'Comma separated values (*.csv)'; '*.txt', 'Tab delimited file (*.txt)'}, 'Save as' );     
         
         if file_name ~= 0
             
-            [pathstr,name,ext] = fileparts(file_name); 
+            [~,name,~] = fileparts(file_name); 
             save_result(strcat(path_name,file_name), filter);  
             %Also save the metadata for choices that produced the results
             save(strcat(strcat(path_name,name), '.meta'),'result_metadata_map');
         end
     end
 
-    function export_coordinates_callback( hObject, eventdata )
+    function export_coordinates_callback( ~, ~ )
        
-        [file_name,path_name, filter] = uiputfile( {'*.csv', 'Comma separated values (*.csv)';}, 'Save as' );     
+        [file_name,path_name, ~] = uiputfile( {'*.csv', 'Comma separated values (*.csv)';}, 'Save as' );     
         
         if file_name ~= 0  
-            [pathstr,name,ext] = fileparts(file_name);      
+            [~,name,~] = fileparts(file_name);      
             save_raw(path_name, name);
             %Also save the metadata for choices that produced the results
             save(strcat(strcat(path_name,name), '.meta'),'result_metadata_map');
         end
     end
 
-    function export_patterns_callback( hObject, eventdata )
+    function export_patterns_callback( ~, ~ )
        
         folder_name = uigetdir(pwd,'Export patterns');     
         
@@ -288,16 +347,15 @@ function WaspFacer()
         end
     end
 
-    function list_images_callback( hObject, eventdata )
+    function list_images_callback( ~, ~ )
         change_image();
         reset_ui();
     end
 
-    function symmetryline_callback( hObject, eventdata )
+    function symmetryline_callback( ~, ~ )
              
         if strcmp( get(button_symmetryline, 'String'), 'Place'  )
             
-            delete_roi('imline', 0 );
             prepare_to_draw(button_symmetryline);
             try
                 symmetry_line = imline(image_axes);
@@ -323,7 +381,7 @@ function WaspFacer()
               
     end
 
-    function rotationline_callback( hObject, eventdata )
+    function rotationline_callback( ~, ~ )
         
         
         if strcmp( get(button_rotationline, 'String'), 'Place'  )
@@ -363,7 +421,7 @@ function WaspFacer()
     end
 
 
-    function area_callback( hObject, eventdata )
+    function area_callback( ~, ~ )
          
         if strcmp( get(button_area, 'String'), 'Place'  )
             
@@ -405,7 +463,7 @@ function WaspFacer()
     end
 
     %Counterclockwise rotation
-    function rotate_callback(  hObject, eventdata )
+    function rotate_callback(  ~, ~ )
 
         line_position = getPosition(rotation_line);
         
@@ -457,7 +515,7 @@ function WaspFacer()
 
         c = bwconncomp(bw,8);
         numOfPixels = cellfun(@numel,c.PixelIdxList);
-        [unused,indexOfMax] = max(numOfPixels);
+        [~,indexOfMax] = max(numOfPixels);
         c.PixelIdxList(indexOfMax) = [];
         
         for i=1:size(c.PixelIdxList,2)
@@ -478,11 +536,11 @@ function WaspFacer()
         cropped_image = crop_top_and_bottom(cropped_image);
         image_white = crop_top_and_bottom(image_white);
         %Calculate area sizes
-        [labeled_image, area_count] = bwlabel(image_white,8);
+        [labeled_image, ~] = bwlabel(image_white,8);
         area_measurements = regionprops(labeled_image, 'area');
         % Get all the areas
         areas = [area_measurements.Area];
-        [sorted_areas, indexes] = sort(areas, 'descend');
+        [~, indexes] = sort(areas, 'descend');
         largest_area = ismember(labeled_image, indexes(1:1));
         image_white = largest_area > 0;     
         cropped_image = image_white;     
@@ -541,7 +599,8 @@ function WaspFacer()
         
         set(button, 'String', 'Cancel'); 
         set(button, 'String', 'Cancel'); 
-        set(button_calculate_symmetry, 'Enable', 'off');        
+        set(button_calculate_symmetry, 'Enable', 'off');    
+        set(button_distanceline, 'Enable', 'off');         
         set(list_images, 'Enable', 'off');      
         set(file_menu, 'Enable', 'off');     
         hide_processing_controls();
@@ -559,7 +618,7 @@ function WaspFacer()
         set(button, 'String', 'Place');      
         set(list_images, 'Enable', 'on');      
         set(file_menu, 'Enable', 'on');     
-
+        set(button_distanceline, 'Enable', 'on')   
         if ~isempty(cropped_image)
             show_processing_controls();
         end
@@ -593,7 +652,7 @@ function WaspFacer()
      
     end
     
-    function display_original_callback(hObject, eventdata)
+    function display_original_callback(~, ~)
   
         if strcmp( get(button_display_original, 'String'), 'Processed')
             image_state = 2;
@@ -610,7 +669,7 @@ function WaspFacer()
         
     end
 
-    function display_outlines_callback(hObject, eventdata)
+    function display_outlines_callback(~, ~)
   
         if strcmp( get(button_display_outlines, 'String'), 'Off')
             image_state = 0;
@@ -624,7 +683,7 @@ function WaspFacer()
         
     end
 
-    function threshold_silder_callback(hObject, eventdata)
+    function threshold_silder_callback(hObject, ~)
         
         if hObject == slider_threshold
             value = get(slider_threshold, 'Value');
@@ -635,7 +694,7 @@ function WaspFacer()
         show_image();
     end
 
-    function fill_silder_callback(hObject, eventdata)
+    function fill_silder_callback(~, ~)
         
         value = get(slider_fill, 'Value');
         set(label_fill, 'String', round(value)  );
@@ -645,7 +704,7 @@ function WaspFacer()
         show_image();
     end
 
-    function calculate_symmetry_callback(hObject, eventdata)
+    function calculate_symmetry_callback(~, ~)
         show_loading_panel(CALCULATING_LABEL);
         set(button_calculate_symmetry, 'Enable', 'off');
         set(button_symmetryline, 'Enable', 'off');
@@ -679,7 +738,7 @@ function WaspFacer()
         drawnow;
     end
 
-    function settings_callback(hObject, eventdata)
+    function settings_callback(~, ~)
         settings_window( landmark_amount, landmark_size, crop_upper, crop_lower, show_symmetry, @change_settings);
     end
 
@@ -692,13 +751,13 @@ function WaspFacer()
     end
 
     function perform_calculations()
-        [top bottom ] = find_intersection();
+        [top, bottom ] = find_intersection();
         
         %Trace the points along the left and right sides of the contour
         left_end_point = trace_contour_half(top, bottom, -1);
         right_end_point = trace_contour_half(top, bottom, 1);
-        [left_length left_points ]= count_contour_length(left_end_point);        
-        [right_length right_points] = count_contour_length(right_end_point);
+        [left_length, left_points ]= count_contour_length(left_end_point);        
+        [right_length, right_points] = count_contour_length(right_end_point);
         %Place equidistant landmarks on both sides
         left_landmarks = place_landmarks(left_end_point, landmark_amount, round( left_length/(landmark_amount+1)) );
         right_landmarks = place_landmarks(right_end_point, landmark_amount, round( right_length/(landmark_amount+1)) ); 
@@ -727,9 +786,12 @@ function WaspFacer()
         
         [symmetry_distance, un_left_reflected, un_right_reflected ] = calculate_symmetry_distance(left_landmark_coordinates, right_landmark_coordinates,top,bottom);
         paint_symmetry(un_left_reflected,un_right_reflected);
-        [pd, Z, tr] = procrustes(left_landmark_coordinates, right_landmark_coordinates, 'Reflection',true, 'Scaling',false );
+        [pd, ~, ~] = procrustes(left_landmark_coordinates, right_landmark_coordinates, 'Reflection',true, 'Scaling',false );
 
         store_landmark_data(left_points, right_points, top, bottom); 
+        
+        %Calculate distance measured by user
+        measured_distance = measure_distance(); 
               
         set(label_symmetry_distance, 'String', symmetry_distance );
         set(label_symmetry_distance, 'Visible', 'on' );        
@@ -742,9 +804,12 @@ function WaspFacer()
         set(label_symmetry_area_difference, 'Visible', 'on'); 
         
         set(label_symmetry_area_total, 'String', area_total);
-        set(label_symmetry_area_total, 'Visible', 'on');         
-               
-        add_result(symmetry_distance, pd, area_difference, area_total); 
+        set(label_symmetry_area_total, 'Visible', 'on');  
+        
+        set(label_distance, 'Visible', 'on')        
+        set(label_distance, 'String', num2str(measured_distance));
+        
+        add_result(symmetry_distance, pd, area_difference, area_total, measured_distance); 
         show_image();
     end
 
@@ -833,7 +898,7 @@ function WaspFacer()
         
     end
 
-    function [ top bottom ] = find_intersection()
+    function [ top, bottom ] = find_intersection()
     
         line_position = getPosition(symmetry_line);
         line_start = line_position(1,:);
@@ -882,7 +947,7 @@ function WaspFacer()
     function result = crop_top_and_bottom(image)
         result = image;
         
-        [ rows columns ] = find(result < 1);
+        [ rows ~ ] = find(result < 1);
         
         top = min(rows);
         bottom = max(rows);
@@ -922,7 +987,7 @@ function WaspFacer()
             point = points{1,1};
             points(1) = [];
            
-            [ found_points visited ] = next_contour_points( point, visited, contour, bottom);
+            [ found_points, visited ] = next_contour_points( point, visited, contour, bottom);
 
             if ~isempty(found_points)
                 points = horzcat(points, found_points);       
@@ -932,7 +997,7 @@ function WaspFacer()
         path = point;
     end
 
-    function [ points visited ] = next_contour_points(node, visited, contour, bottom)
+    function [ points visited ] = next_contour_points(node, visited, contour, ~)
         
         points = cell(1,0);
         previous_x = node.x;
@@ -1065,7 +1130,7 @@ function WaspFacer()
     end
 
     function show_processing_controls()
-        set(slider_threshold, 'Enable', 'on');;        
+        set(slider_threshold, 'Enable', 'on');     
         set(slider_fill, 'Enable', 'on');    
         set(button_display_original, 'Enable', 'on');
         set(button_display_outlines, 'Enable', 'on');
@@ -1082,9 +1147,10 @@ function WaspFacer()
         set(label_symmetry_similarity, 'Visible', 'off');
         set(label_symmetry_area_difference, 'Visible', 'off');      
         set(label_symmetry_area_total, 'Visible', 'off');          
+        set(label_distance, 'Visible', 'off');          
     end
 
-    function add_result( symmetry_distance, proc_dist, area_dif, area_total )
+    function add_result( symmetry_distance, proc_dist, area_dif, area_total, measured_distance )
              
         data = get(table_result, 'Data');
         selected_image_index = get(list_images, 'Value');
@@ -1097,7 +1163,7 @@ function WaspFacer()
         new_entry{1,3} = proc_dist;         
         new_entry{1,4} = area_dif;
         new_entry{1,5} = area_total;
-                
+        new_entry{1,6} = measured_distance;       
         exists = [];
         if ~isempty(data)
             exists = strmatch(char(selected_image_name), { data{:,1} });
@@ -1125,6 +1191,7 @@ function WaspFacer()
         result_metadata.proc_dist = proc_dist;        
         result_metadata.area_dif = area_dif;  
         result_metadata.area_total = area_total;
+        result_metadata.measured_distance = measured_distance;
         result_metadata.crop_upper = crop_upper; 
         result_metadata.crop_lower = crop_lower;    
         result_metadata.landmark_amount = landmark_amount;        
@@ -1214,7 +1281,7 @@ function WaspFacer()
         fclose(fid); 
     end
 
-    function save_shapes(shapses_folder_path, name ) 
+    function save_shapes(shapses_folder_path, ~ ) 
         
         metadata_keys = keys(result_metadata_map);
         for i = 1:size(metadata_keys,2)
@@ -1226,7 +1293,7 @@ function WaspFacer()
     end
         
     function clear_results()
-        set(table_result, 'Data', cell(0,5));        
+        set(table_result, 'Data', cell(0,6));        
         set(table_result, 'Visible', 'off');   
         set(menu_save_results, 'Visible', 'off');    
         set(menu_export_submenu, 'Visible', 'off');         
@@ -1264,12 +1331,12 @@ function WaspFacer()
         drawnow expose;
     end
 
-    function zoom_in_callback(hObject, eventdata)
+    function zoom_in_callback(~, ~)
         current_magnification = isp_api.getMagnification();
         isp_api.setMagnification(current_magnification/ZOOM_FACTOR);
     end
 
-    function zoom_out_callback(hObject, eventdata)
+    function zoom_out_callback(~, ~)
         current_magnification = isp_api.getMagnification();
         fit_mag = isp_api.findFitMag();
         desired_mag = current_magnification*ZOOM_FACTOR;
@@ -1280,9 +1347,9 @@ function WaspFacer()
         isp_api.setMagnification(desired_mag);  
     end
 
-    function import_callback(hObject, eventdata)
+    function import_callback(~, ~)
         
-        [filenames pathname ] = uigetfile({'*.meta';},'Select meta file','MultiSelect', 'off');
+        [filenames, pathname ] = uigetfile({'*.meta';},'Select meta file','MultiSelect', 'off');
            
         image_name_list = cell(1,0);
         %If a file was actually selected...        
