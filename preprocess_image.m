@@ -21,6 +21,9 @@ function preprocessed_image = preprocess_image( original_image )
 % July 2015; Last revision: 31-May-2017
 
     cform = makecform('srgb2lab');
+    if size(original_image,3) == 4
+       original_image = original_image(:,:,1:3); 
+    end
     lab_image = applycform(original_image,cform);
     ab = double(lab_image(:,:,2:3));
     nrows = size(ab,1);

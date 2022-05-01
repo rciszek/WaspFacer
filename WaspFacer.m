@@ -89,7 +89,7 @@ function WaspFacer()
         button_zoom_out = uicontrol( zoom_button_box, 'Style', 'pushbutton', 'String', 'Zoom Out', 'Units', 'Normalized','Position', [ 0.01, 0.01, 0.4 , 0.5], 'Enable', 'off' );     
         button_zoom_in = uicontrol( zoom_button_box, 'Style', 'pushbutton', 'String', 'Zoom In', 'Units', 'Normalized','Position', [ 0.5, 0.01, 0.4 , 0.5], 'Enable', 'off' ); 
         uix.Empty( 'Parent', zoom_button_box );
-        set( zoom_button_box, 'Widths', [ -1 60 60 -1 ] ); 
+        set( zoom_button_box, 'Widths', [ -1 70 70 -1 ] ); 
     
     panel_image = uipanel(center_box, 'Title', [] , 'Position', [ .26, .1, 0.48, .8], 'BorderType', 'none' );
         image_axes = axes('parent',panel_image,'position',[0.01 0.02 0.97 0.97],'Units','normalized');   
@@ -213,7 +213,7 @@ function WaspFacer()
        
 
     function select_files_callback( ~, eventdata )
-        [filenames, pathname ] = uigetfile({'*.jpg';'*.png';'*.bmb'},'Select images','MultiSelect', 'on');
+        [filenames, pathname ] = uigetfile({'*.jpg';'*.png';'*.bmb';'*.tiff'},'Select images','MultiSelect', 'on');
            
         image_name_list = cell(1,0);
         %If a file was actually selected...        
@@ -567,6 +567,9 @@ function WaspFacer()
         name_list = get(list_images, 'String');
         image_name = name_list{selected_image};
         original_image = imread(char(image_map(image_name)));
+        if size(original_image,3)==4
+            original_image = original_image(:,:,1:3);
+        end
         preprocessed_image = preprocessed_map(image_name);
         image_size = size(original_image);
     end
