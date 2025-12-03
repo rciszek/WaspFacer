@@ -8,9 +8,7 @@ function WaspFacer()
 % Other m-files required: GUI Layout Toolbox by David Sampson
 %
 % Author: Robert Ciszek 
-% July 2015; Last revision: 10-July-2019
-
-    addpath(genpath(pwd))
+% July 2015; Last revision: 02-December-2025
 
     image_map = containers.Map('UniformValues',false);
     preprocessed_map = containers.Map('UniformValues',false);
@@ -52,7 +50,7 @@ function WaspFacer()
     %Define main GUI figure
     main_gui_figure = figure('Visible','off', 'Resize', 'on', 'DockControls', 'off', 'Units', 'Normalized','Position', [ 0 0 0.5 0.5]);
 
-    set(main_gui_figure, 'Name', 'WaspFacer 0.97');
+    set(main_gui_figure, 'Name', 'WaspFacer 0.98');
     set(main_gui_figure, 'NumberTitle', 'Off');
     set(main_gui_figure, 'Toolbar', 'none');
     set(main_gui_figure, 'Menubar', 'none');
@@ -135,15 +133,16 @@ function WaspFacer()
     panel_threshold = uiextras.Panel('Parent',right_box, 'Title', 'Threshold' );
         threshold_box = uiextras.HBox( 'Parent', panel_threshold, 'Spacing', 10, 'Padding', 5 );     
             slider_threshold = uicontrol( threshold_box, 'Style', 'slider', 'Min', 1, 'Max', 99,  'value', threshold*100, 'SliderStep', [1/100 1/100], 'Enable', 'off');     
-            label_threshold = uix.Text( 'Parent', threshold_box, 'String', get(slider_threshold, 'Value') / 100, 'Visible', 'on', 'VerticalAlignment', 'middle' );  
+            label_vbox_threshold = uiextras.VBox('Parent',threshold_box, 'Padding',2);
+            label_threshold = uicontrol('Parent', label_vbox_threshold,'Style', 'text', 'String',  get(slider_threshold, 'Value') / 100);            
             set( threshold_box, 'Sizes', [-10 -2] );
     
     panel_fill = uiextras.Panel('Parent',right_box, 'Title', 'Fill');
         fill_box = uiextras.HBox( 'Parent', panel_fill, 'Spacing', 10, 'Padding', 5 );      
             slider_fill = uicontrol( 'Parent',fill_box, 'Style', 'slider', 'Min', 1, 'Max', 1000,  'value', fill, 'SliderStep', [1/1000 1/1000], 'Enable', 'off');     
-            label_fill = uix.Text( 'Parent',fill_box, 'String', get(slider_fill, 'Value'), 'Visible', 'on','VerticalAlignment', 'middle' );      
+            label_vbox_fill = uiextras.VBox('Parent',fill_box, 'Padding',2);
+            label_fill = uicontrol('Parent', label_vbox_fill,'Style', 'text', 'String',  get(slider_fill, 'Value'));
             set( fill_box, 'Sizes', [-10 -2] );
-   
             
     symmetry_mm_box = uiextras.HBox( 'Parent', right_box, 'Spacing', 10, 'Padding', 5 );               
         panel_calculate_symmetry = uiextras.Panel( 'Parent',symmetry_mm_box, 'Title', 'Symmetry', 'Padding', 5 ); 
@@ -209,7 +208,7 @@ function WaspFacer()
     movegui(main_gui_figure, 'center');
     set(main_gui_figure, 'Visible', 'on');
     drawnow;
-    set(get(handle(main_gui_figure),'JavaFrame'),'Maximized',1);
+    set(gcf, 'WindowState', 'maximized');
        
 
     function select_files_callback( ~, eventdata )
@@ -506,11 +505,9 @@ function WaspFacer()
                 
         landmark_image = [];
         cropped_image = preprocessed_image;        
-             
         cropped_image(repmat(~mask,[1,1,1])) = 255;        
         
-        bw = im2bw(cropped_image,threshold);
-        
+        bw = imbinarize(cropped_image,threshold);
         bw = imcomplement(bw);
 
         c = bwconncomp(bw,8);
@@ -950,7 +947,7 @@ function WaspFacer()
     function result = crop_top_and_bottom(image)
         result = image;
         
-        [ rows ~ ] = find(result < 1);
+        [ rows, ~ ] = find(result < 1);
         
         top = min(rows);
         bottom = max(rows);
@@ -1000,7 +997,7 @@ function WaspFacer()
         path = point;
     end
 
-    function [ points visited ] = next_contour_points(node, visited, contour, ~)
+    function [ points, visited ] = next_contour_points(node, visited, contour, ~)
         
         points = cell(1,0);
         previous_x = node.x;
@@ -1364,7 +1361,7 @@ function WaspFacer()
             %If a single file was selected
             if isa(filenames, 'char')    
                 complete_filename = strcat(pathname, filenames);
-                meta_data = importdata(complete_filename);
+                metadata = importdata(complete_filename);
             %If multiple files were selected     
             end
 
